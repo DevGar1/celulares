@@ -133,7 +133,7 @@ const Home = () => {
                       operador === antenas.gsm.operador ? "animate-blink" : ""
                     }
                     valor={
-                      operador === antenas.gsm.operador
+                      Number(operador) ===Number( antenas.gsm.operador)
                         ? "Handoff de operador"
                         : "Sin handoff"
                     }
