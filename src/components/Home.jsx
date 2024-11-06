@@ -43,8 +43,6 @@ const Home = () => {
       const id = setTimeout(() => {
         setIsVisible(false);
         clearTimeout(id);
-
-        console.log("pasa");
       }, 4000);
     }
   }, [isVisible]);
@@ -88,6 +86,14 @@ const Home = () => {
     );
   }
 
+  console.log(
+    operador,
+    antenas.gsm.operador,
+    Number(operador) === Number(antenas.gsm.operador),
+    Number(operador),
+    Number(antenas.gsm.operador)
+  );
+
   return (
     <main className=" w-full h-screen flex justify-center items-center px-4  overflow-scroll ">
       <div className="min-w-[250px] max-w-[750px] w-full  rounded-xl py-2  overflow-scroll px-2 bg-white flex flex-col shadow-2xl border-2 border-gray">
@@ -130,12 +136,12 @@ const Home = () => {
                   <Field
                     titulo={"HandOff"}
                     className={
-                      operador === antenas.gsm.operador ? "animate-blink" : ""
+                      operador === antenas.gsm.operador ?   "": "animate-blink"
                     }
                     valor={
-                      Number(operador) ===Number( antenas.gsm.operador)
-                        ? "Handoff de operador"
-                        : "Sin handoff"
+                      Number(operador) === Number(antenas.gsm.operador)
+                        ? "Sin handoff"
+                        : "Handoff de operador"
                     }
                   />
                 </div>
@@ -193,7 +199,8 @@ const Home = () => {
                 <div className="mt-6">
                   <button
                     onClick={() => {
-                      const isValid = Number(paqueteServicio[query]) === Number(plan);
+                      const isValid =
+                        Number(paqueteServicio[query]) === Number(plan);
                       setMessage(
                         isValid
                           ? "Servicio obtenido de manera correcta"

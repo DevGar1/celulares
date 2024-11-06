@@ -15,7 +15,6 @@ function App() {
   const isCorrect = useRef(false);
 
   useEffect(() => {
-    console.log(isVisible, count.current);
     if (isVisible && count.current < 2) {
       const id = setTimeout(() => {
         setIsVisible(false);
@@ -30,7 +29,6 @@ function App() {
             }
           });
         }
-        console.log("pasa");
       }, 2000);
     }
     if (isVisible && count.current === 2) {
