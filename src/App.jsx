@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { loginSchema, passwordValues, paymentValues } from "../validations";
+import { loginSchema } from "../validations";
 import { Formik, Form, Field } from "formik";
 import Input from "./components/Input";
 import Modal from "./components/Modal";
@@ -14,21 +14,22 @@ function App() {
   const count = useRef(0);
   const isCorrect = useRef(false);
 
+
+
   useEffect(() => {
     if (isVisible && count.current < 2) {
       const id = setTimeout(() => {
         setIsVisible(false);
-        clearTimeout(id);
         if (isCorrect.current) {
           navigation("/home", {
-
             state: {
               isCorrect: true,
               id: 1,
-              ...isCorrect.current
-            }
+              ...isCorrect.current,
+            },
           });
         }
+        clearTimeout(id);
       }, 2000);
     }
     if (isVisible && count.current === 2) {
@@ -59,19 +60,22 @@ function App() {
           onSubmit={(values) => {
             const person = personas.find((person) => {
               return (
-                String(person.abonado) == String(values.phone) &&
-                Number(person.plan) === Number(values.payment) &&
-                Number(person.desbloqueo) === Number(values.password) 
+                String(person.abonado) == String(values.phone)
+                // Number(person.plan) === Number(values.payment) &&
+                // Number(person.desbloqueo) === Number(values.password)
               );
             });
+            console.log("person ", person.estado)
             addError();
             setIsVisible(true);
-            isCorrect.current = person;
-            if (
-              person &&
-              (person.estado === "010" || person.estado === "011")
-            ) {
-              setMessage(
+
+            console.log(!["010", "011", "100"].includes(String(person.servicio)))
+            const validation =
+              person && !["010", "011", "100"].includes(String(person.servicio));
+            isCorrect.current = validation ? person : null;
+
+            if (!isCorrect.current) {
+              return setMessage(
                 "Debido a error en los datos ingresados y/o esta en la lista de EIR como robado o clonado"
               );
             }
@@ -96,7 +100,7 @@ function App() {
                   type="number"
                 />
               </Input>
-              <Input
+              {/* <Input
                 title={"Información de pago"}
                 isInvalid={errors.payment}
                 errorMessage={errors.payment}
@@ -133,7 +137,7 @@ function App() {
                     />
                   ))}
                 </Field>
-              </Input>
+              </Input> */}
 
               <button
                 className="cursor-pointer bg-[#3ea6ff] py-2 px-4 rounded-2xl text-white border-[#3ea6ff] border-2 hover:bg-white hover:text-[#3ea6ff] duration-300 active:scale-105 disabled:bg-gray-400 disabled:border-gray-400 disabled:hover:text-white disabled:cursor-not-allowed"

@@ -17,10 +17,10 @@ export const loginSchema = Yup.object().shape({
   phone: Yup.string()
     .matches(/^\d{10}$/, "El número debe tener exactamente 10 dígitos")
     .required("Dato requerido"),
-  payment: Yup.number()
-    .oneOf(paymentValues.map((item) => item.value))
-    .required("Dato requerido"),
-  password: Yup.number()
-    .oneOf(passwordValues.map((item) => item.value))
-    .required("Dato requerido"),
+  // payment: Yup.number()
+  //   .oneOf(paymentValues.map((item) => item.value))
+  //   .required("Dato requerido"),
+  // password: Yup.number()
+  //   .oneOf(passwordValues.map((item) => item.value))
+  //   .required("Dato requerido"),
 });

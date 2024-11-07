@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       animation: {
-        blink: "blink 1s infinite",
+        blink: "blink 3s infinite",
       },
       keyframes: {
         blink: {

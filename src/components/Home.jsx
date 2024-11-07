@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import antena from "../assets/image.png";
+
+import antenaImg from "../assets/image.png";
 import phone from "../assets/cell-phone.png";
 import Field from "./Field";
 import {
@@ -9,15 +10,15 @@ import {
   estados,
   frecuencia,
   marcas,
-  myData,
   operadores,
   paqueteServicio,
   planes,
   seguridad,
   servicios,
 } from "../datos";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Modal from "./Modal";
+import Pdf from "./Pdf";
 
 const options = [
   "Voz",
@@ -37,18 +38,103 @@ const Home = () => {
   const [isHome, setIsHome] = useState(true);
   const [query, setQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState([]);
+  const [antena, setAntena] = useState("gsm");
+  const generatePDF = useCallback(() => {
+    console.log("veamo");
+
+    const docDefinition = {
+      content: [
+        { text: "Resultados del testing", style: "header" },
+        { text: "\n\n" }, // Espacio entre título y tabla
+        {
+          table: {
+            headerRows: 1,
+            widths: [
+              "*",
+              "*",
+              "*",
+              "*",
+              "*",
+              "*",
+              "*",
+              "*",
+              "*",
+              "*",
+              "*",
+              "*",
+            ],
+            body: [
+              [
+                { text: "Abonado", style: "tableHeader" },
+                { text: "Alcaldia", style: "tableHeader" },
+                { text: "Banda", style: "tableHeader" },
+                { text: "Desbloqueo", style: "tableHeader" },
+                { text: "Estado", style: "tableHeader" },
+                { text: "LAC", style: "tableHeader" },
+                { text: "Marca", style: "tableHeader" },
+                { text: "Nombre", style: "tableHeader" },
+                { text: "Operador", style: "tableHeader" },
+                { text: "Plan", style: "tableHeader" },
+                { text: "Servicio", style: "tableHeader" },
+                { text: "Estado Operacion", style: "tableHeader" },
+              ],
+              // Aquí se agregan filas de datos de ejemplo
+              [
+                abonado,
+                alcaldia,
+                banda,
+                desbloqueo,
+                estado,
+                lac,
+                marca,
+                nombre,
+                operador,
+                plan,
+                servicio,
+                "si",
+              ],
+
+              // Agrega más filas según sea necesario
+            ],
+          },
+        },
+      ],
+      styles: {
+        header: {
+          fontSize: 18,
+          bold: true,
+          margin: [0, 0, 0, 10],
+        },
+        tableHeader: {
+          bold: true,
+          fontSize: 12,
+          color: "white",
+          fillColor: "#2f4f4f", // Usando el color primario del usuario
+        },
+      },
+      defaultStyle: {
+        fontSize: 10,
+      },
+    };
+    console.log("veamo");
+    const pdfGenerator = pdfMake.createPdf(docDefinition);
+    pdfGenerator.getBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      console.log(url);
+      //   setUrl(url);
+      pdfGenerator.download();
+    });
+  }, [abonado, alcaldia, banda, desbloqueo, estado, lac, marca, nombre, operador, plan, servicio]);
 
   useEffect(() => {
     if (isVisible) {
       const id = setTimeout(() => {
         setIsVisible(false);
         clearTimeout(id);
+        generatePDF();
       }, 4000);
     }
-  }, [isVisible]);
-
-  if (!location.state.nombre) return navigate("/");
-
+  }, [generatePDF, isVisible]);
   const {
     abonado,
     alcaldia,
@@ -62,6 +148,14 @@ const Home = () => {
     plan,
     servicio,
   } = location.state;
+
+  useEffect(() => {
+    if (!antenas[antena]) return;
+    if (String(antenas[antena].frecuencia) === servicio) return;
+    setAntena(banda);
+  }, [antena, banda, servicio]);
+
+  if (!location.state.nombre) return navigate("/");
 
   const handleOptionClick = (option) => {
     setQuery(option);
@@ -80,28 +174,27 @@ const Home = () => {
 
   if (isVisible) {
     return (
-      <Modal>
-        <p>{message}</p>
-      </Modal>
+      <>
+        <Modal>
+          <p>{message}</p>
+        </Modal>
+        <Pdf {...location.state} />
+      </>
     );
   }
+  const antenaData = antenas[antena];
 
-  console.log(
-    operador,
-    antenas.gsm.operador,
-    Number(operador) === Number(antenas.gsm.operador),
-    Number(operador),
-    Number(antenas.gsm.operador)
-  );
+  if (!antenaData) return;
 
   return (
     <main className=" w-full h-screen flex justify-center items-center px-4  overflow-scroll ">
-      <div className="min-w-[250px] max-w-[750px] w-full  rounded-xl py-2  overflow-scroll px-2 bg-white flex flex-col shadow-2xl border-2 border-gray">
+      <div className="min-w-[250px] max-w-[750px] w-full h-full  rounded-xl py-2  overflow-scroll px-2 bg-white flex flex-col shadow-2xl border-2 border-gray">
         <h2 className="text-center font-bold text-2xl mb-5">
           Bienvenid@ <b>{nombre}</b>
         </h2>
         <div className="flex justify-end">
           <button
+            disabled={String(banda) !== String(antenas[antena].frecuencia)}
             onClick={() => setIsHome((value) => !value)}
             className="cursor-pointer bg-[#3ea6ff] py-1 px-4 rounded-2xl text-white border-[#3ea6ff] border-2 hover:bg-white hover:text-[#3ea6ff] duration-300 active:scale-105 disabled:bg-gray-400 disabled:border-gray-400 disabled:hover:text-white disabled:cursor-not-allowed"
           >
@@ -114,36 +207,39 @@ const Home = () => {
               <div className="pl-2 pt-4">
                 <p className="text-xl mb-5 flex items-center">
                   Datos de la red:{" "}
-                  <img className="inline-block w-10" src={antena} />
+                  <img className="inline-block w-10" src={antenaImg} />
                 </p>
                 <div className="flex gap-10 flex-wrap">
-                  <Field titulo={"Compañia"} valor={antenas.gsm.network} />
-                  <Field titulo={"MNC"} valor={antenas.gsm.mnc} />
-                  <Field titulo={"MCC"} valor={antenas.gsm.mcc} />
-                  <Field titulo={"Cell ID"} valor={antenas.gsm.cid} />
+                  <Field titulo={"Compañia"} valor={antenaData.network} />
+                  <Field titulo={"MNC"} valor={antenaData.mnc} />
+                  <Field titulo={"MCC"} valor={antenaData.mcc} />
+                  <Field titulo={"Cell ID"} valor={antenaData.cid} />
                   <Field
                     titulo={"Frecuencia"}
-                    valor={`${antenas.gsm.frecuencia} Hz`}
+                    valor={`${frecuencia[antenaData.frecuencia]} Hz`}
                   />
                   <Field
                     titulo={"Registro"}
-                    valor={
-                      myData.find((person) => person.abonado === abonado)
-                        ? "HLR"
-                        : "VLR"
-                    }
+                    valor={marca === antenaData.operador ? "HLR" : "VLR"}
                   />
                   <Field
                     titulo={"HandOff"}
                     className={
-                      operador === antenas.gsm.operador ?   "": "animate-blink"
+                      operador === antenaData.operador ? "" : "animate-blink"
                     }
                     valor={
-                      Number(operador) === Number(antenas.gsm.operador)
+                      Number(operador) === Number(antenaData.operador)
                         ? "Sin handoff"
                         : "Handoff de operador"
                     }
                   />
+                  {antenaData.frecuencia !== banda && (
+                    <Field
+                      titulo={"Red no compatible, no puede solicitar"}
+                      className={"animate-blink"}
+                      valor={""}
+                    />
+                  )}
                 </div>
               </div>
               <div className="pl-2 pt-4">
@@ -155,7 +251,7 @@ const Home = () => {
                   <Field titulo={"abonado"} valor={abonado} />
                   <Field titulo={"plan"} valor={planes[plan]} />
                   <Field titulo={"alcaldia"} valor={alcaldias[alcaldia]} />
-                  <Field titulo={"banda"} valor={frecuencia[banda]} />
+                  <Field titulo={"banda"} valor={`${frecuencia[banda]} Hz`} />
                   <Field titulo={"desbloqueo"} valor={seguridad[desbloqueo]} />
                   <Field titulo={"estado MS"} valor={estados[estado]} />
                   <Field
