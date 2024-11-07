@@ -69,9 +69,9 @@ const Home = () => {
 
   useEffect(() => {
     if (!antenas[antena]) return;
-    if (String(antenas[antena].frecuencia) === servicio) return;
+    if (String(antenas[antena].frecuencia) === String(banda)) return;
     setAntena(banda);
-  }, [antena, banda, servicio]);
+  }, [antena, banda]);
 
   if (!location.state.nombre) return navigate("/");
 
@@ -92,11 +92,9 @@ const Home = () => {
 
   if (isVisible) {
     return (
-      <>
         <Modal>
           <p>{message}</p>
         </Modal>
-      </>
     );
   }
   const antenaData = antenas[antena];
@@ -216,7 +214,7 @@ const Home = () => {
     // Genera y descarga el PDF
     pdfMake.createPdf(documentDefinition).download("testing_app.pdf");
   };
-
+console.log(String(antenaData.frecuencia) , String(banda) )
   if (!antenaData) return;
 
   return (
@@ -266,7 +264,7 @@ const Home = () => {
                         : "Handoff de operador"
                     }
                   />
-                  {antenaData.frecuencia !== banda && (
+                  {String(antenaData.frecuencia) !== String(banda) && (
                     <Field
                       titulo={"Red no compatible, fue redirigido"}
                       className={"animate-blink"}
