@@ -1191,6 +1191,8 @@ export const antenas = {
     operador: 3,
   },
   1: {
+    network: "Telefonica Moviles (Movistar)",
+
     mcc: 334,
     mnc: 20,
     lac: 12008,
@@ -1199,6 +1201,8 @@ export const antenas = {
     operador: 3,
   },
   3: {
+    network: "Telefonica Moviles (Movistar)",
+
     mcc: 334,
     mnc: 90,
     lac: 9207,

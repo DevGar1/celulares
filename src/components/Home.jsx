@@ -16,9 +16,14 @@ import {
   seguridad,
   servicios,
 } from "../datos";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "./Modal";
-import Pdf from "./Pdf";
+
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+console.log(pdfFonts);
+
+pdfMake.vfs = pdfFonts;
 
 const options = [
   "Voz",
@@ -39,102 +44,15 @@ const Home = () => {
   const [query, setQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [antena, setAntena] = useState("gsm");
-  const generatePDF = useCallback(() => {
-    console.log("veamo");
-
-    const docDefinition = {
-      content: [
-        { text: "Resultados del testing", style: "header" },
-        { text: "\n\n" }, // Espacio entre título y tabla
-        {
-          table: {
-            headerRows: 1,
-            widths: [
-              "*",
-              "*",
-              "*",
-              "*",
-              "*",
-              "*",
-              "*",
-              "*",
-              "*",
-              "*",
-              "*",
-              "*",
-            ],
-            body: [
-              [
-                { text: "Abonado", style: "tableHeader" },
-                { text: "Alcaldia", style: "tableHeader" },
-                { text: "Banda", style: "tableHeader" },
-                { text: "Desbloqueo", style: "tableHeader" },
-                { text: "Estado", style: "tableHeader" },
-                { text: "LAC", style: "tableHeader" },
-                { text: "Marca", style: "tableHeader" },
-                { text: "Nombre", style: "tableHeader" },
-                { text: "Operador", style: "tableHeader" },
-                { text: "Plan", style: "tableHeader" },
-                { text: "Servicio", style: "tableHeader" },
-                { text: "Estado Operacion", style: "tableHeader" },
-              ],
-              // Aquí se agregan filas de datos de ejemplo
-              [
-                abonado,
-                alcaldia,
-                banda,
-                desbloqueo,
-                estado,
-                lac,
-                marca,
-                nombre,
-                operador,
-                plan,
-                servicio,
-                "si",
-              ],
-
-              // Agrega más filas según sea necesario
-            ],
-          },
-        },
-      ],
-      styles: {
-        header: {
-          fontSize: 18,
-          bold: true,
-          margin: [0, 0, 0, 10],
-        },
-        tableHeader: {
-          bold: true,
-          fontSize: 12,
-          color: "white",
-          fillColor: "#2f4f4f", // Usando el color primario del usuario
-        },
-      },
-      defaultStyle: {
-        fontSize: 10,
-      },
-    };
-    console.log("veamo");
-    const pdfGenerator = pdfMake.createPdf(docDefinition);
-    pdfGenerator.getBlob((blob) => {
-      const url = URL.createObjectURL(blob);
-      console.log(url);
-      //   setUrl(url);
-      pdfGenerator.download();
-    });
-  }, [abonado, alcaldia, banda, desbloqueo, estado, lac, marca, nombre, operador, plan, servicio]);
 
   useEffect(() => {
     if (isVisible) {
       const id = setTimeout(() => {
         setIsVisible(false);
         clearTimeout(id);
-        generatePDF();
       }, 4000);
     }
-  }, [generatePDF, isVisible]);
+  }, [isVisible]);
   const {
     abonado,
     alcaldia,
@@ -178,11 +96,124 @@ const Home = () => {
         <Modal>
           <p>{message}</p>
         </Modal>
-        <Pdf {...location.state} />
       </>
     );
   }
   const antenaData = antenas[antena];
+
+  const generatePDF = () => {
+    // Define el contenido y el estilo del PDF
+    console.log(location.state);
+    const documentDefinition = {
+      content: [
+        {
+          text: `Aplicación creada por Abraham García e Ivan Gonzalez`,
+          style: "header",
+        },
+
+        {
+          text: `Reporte testing realizado con el número de: ${location.state.nombre}`,
+          margin: [0, 20, 0, 20],
+        },
+
+        {
+          table: {
+            headerRows: 1,
+            widths: ["*", "*", "*", "*", "*", "*"],
+            body: [
+              [
+                "Abonado",
+                "Alcaldía",
+                "Banda de frecuencia",
+                "Tipo de desbloqueo",
+                "Estado",
+                "LAC",
+              ],
+              [abonado, alcaldia, banda, desbloqueo, estado, lac],
+            ],
+          },
+        },
+        {
+          margin: [0, 20, 0, 20],
+          table: {
+            headerRows: 1,
+            widths: [50, 50, "*", "*", "*", "*",'*'],
+            body: [
+              [
+                "Marca móvil",
+                "Operador",
+                "Tipo plan",
+                "Servicio",
+                "Servicio seleccionado",
+                "Respuesta del servicio",
+                "Roaming",
+              ],
+              [
+                marca,
+                operador,
+                plan,
+                servicio,
+                query,
+                Number(paqueteServicio[query]) === Number(plan)
+                  ? "Correcto"
+                  : "Denegado",
+                alcaldia === "000" ? "Roaming" : "Sin roaming",
+              ],
+            ],
+          },
+        },
+        {
+          text: `Los datos de conexión son: `,
+          style: "subheader",
+        },
+        {
+          margin: [0, 20, 0, 20],
+          table: {
+            headerRows: 1,
+            headerStyle: { textAling: "center" },
+            widths: ["*", 40, 40, "*", "*", "*", "*"],
+            body: [
+              [
+                "Compañia",
+                "MNC",
+                "MCC",
+                "Cell",
+                "Frecuencia",
+                "Registro",
+                "HandOff",
+              ],
+              [
+                antenaData.network,
+                antenaData.mnc,
+                antenaData.mcc,
+                antenaData.cid,
+                `${frecuencia[antenaData.frecuencia]} Hz`,
+                marca === antenaData.operador ? "HLR" : "VLR",
+                Number(operador) === Number(antenaData.operador)
+                  ? "Sin handoff"
+                  : "Handoff de operador",
+
+              ],
+            ],
+          },
+        },
+      ],
+      styles: {
+        header: {
+          fontSize: 18,
+          bold: true,
+        },
+        subheader: {
+          fontSize: 16,
+          bold: true,
+          margin: [0, 10, 0, 10],
+        },
+      },
+    };
+
+    // Genera y descarga el PDF
+    pdfMake.createPdf(documentDefinition).download("testing_app.pdf");
+  };
 
   if (!antenaData) return;
 
@@ -206,7 +237,7 @@ const Home = () => {
             <>
               <div className="pl-2 pt-4">
                 <p className="text-xl mb-5 flex items-center">
-                  Datos de la red:{" "}
+                  Datos de la red:
                   <img className="inline-block w-10" src={antenaImg} />
                 </p>
                 <div className="flex gap-10 flex-wrap">
@@ -235,7 +266,7 @@ const Home = () => {
                   />
                   {antenaData.frecuencia !== banda && (
                     <Field
-                      titulo={"Red no compatible, no puede solicitar"}
+                      titulo={"Red no compatible, fue redirigido"}
                       className={"animate-blink"}
                       valor={""}
                     />
@@ -244,7 +275,7 @@ const Home = () => {
               </div>
               <div className="pl-2 pt-4">
                 <p className="text-xl mb-5">
-                  Estos son tus datos:{" "}
+                  Datos MS:
                   <img className="inline-block w-10" src={phone} />
                 </p>
                 <div className="flex gap-10 flex-wrap">
@@ -303,6 +334,7 @@ const Home = () => {
                           : "El plan actual no permite este servicio"
                       );
                       setIsVisible(true);
+                      generatePDF();
                     }}
                     className="cursor-pointer bg-[#3ea6ff] py-1 px-4 rounded-2xl text-white border-[#3ea6ff] border-2 hover:bg-white hover:text-[#3ea6ff] duration-300 active:scale-105 disabled:bg-gray-400 disabled:border-gray-400 disabled:hover:text-white disabled:cursor-not-allowed"
                     disabled={!query || query === ""}
