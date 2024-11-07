@@ -171,7 +171,7 @@ const Home = () => {
           table: {
             headerRows: 1,
             headerStyle: { textAling: "center" },
-            widths: ["*", 40, 40, "*", "*", "*", "*"],
+            widths: ["*", 40, 40, "*", "*", "*", "*", "*"],
             body: [
               [
                 "Compañia",
@@ -181,6 +181,7 @@ const Home = () => {
                 "Frecuencia",
                 "Registro",
                 "HandOff",
+                "Alcaldia",
               ],
               [
                 antenaData.network,
@@ -192,6 +193,7 @@ const Home = () => {
                 Number(operador) === Number(antenaData.operador)
                   ? "Sin handoff"
                   : "Handoff de operador",
+                  "Iztapalapa"
 
               ],
             ],
